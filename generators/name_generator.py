@@ -1,3 +1,4 @@
+import csv
 import string
 import random
 
@@ -8,7 +9,7 @@ table = []
 for i in range(0, len(alphabet)):
     table.append([])
     for j in range(0, len(alphabet)):
-        table[i].append(1)
+        table[i].append(0)
 
 
 def is_wovel(letter):
@@ -46,7 +47,8 @@ def normalize_matrix(table):
         for j in range(0, len(table)):
             total += table[i][j]
         for j in range(0, len(table)):
-            table[i][j] /= total
+            if total != 0:
+                table[i][j] /= total
     return table
 
 
@@ -66,5 +68,49 @@ def pick_letter(letter: int, table: list) -> str:
             return alphabet[i]
 
 
-name = name_generator(5)
-print(name)
+def get_letter_index(letter):
+    for i in range(0, len(alphabet)):
+        if letter == alphabet[i]:
+            return i
+
+
+"""
+# with csv module
+def gen_matrix_from_name_list(name_list):
+    with open(name_list, newline='') as csvfile:
+        reader = csv.reader(csvfile, delimiter=',', quotechar='|')
+        for name in reader:
+            name = name[0]
+            for i in range(0, len(name) - 1):
+                letter1 = name[i].lower()
+                letter2 = name[i+1].lower()
+                index1 = get_letter_index(letter1)
+                index2 = get_letter_index(letter2)
+"""
+
+
+def gen_matrix_from_name_list(name_list):
+    with open(name_list, "r") as file:
+        f = file.readlines()
+        for name in f:
+            for i in range(0, len(name) - 2):
+                letter1 = name[i].lower()
+                letter2 = name[i+1].lower()
+                index1 = get_letter_index(letter1)
+                index2 = get_letter_index(letter2)
+                table[index1][index2] += 1
+    normalize_matrix(table)
+
+
+def matrix_to_file(file):
+    with open(file, 'w', newline='') as csvfile:
+        writer = csv.writer(csvfile, delimiter=',',
+                            quotechar='|', quoting=csv.QUOTE_MINIMAL)
+        for i in range(0, len(alphabet)):
+            writer.writerow(table[i])
+
+
+f = "./resources/human_male.csv"
+l = "./resources/boys_names.csv"
+gen_matrix_from_name_list(l)
+matrix_to_file(f)
