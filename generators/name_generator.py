@@ -16,7 +16,7 @@ def is_wovel(letter):
     return letter.lower() in wovel
 
 
-def name_generator(n: int) -> str:
+def name_generator(n: int, table) -> str:
     name1 = random.choice(alphabet).upper()  # 1st letter - random uppercase letter
 
     for i in range(1, n):
@@ -74,22 +74,14 @@ def get_letter_index(letter):
             return i
 
 
-"""
-# with csv module
 def gen_matrix_from_name_list(name_list):
-    with open(name_list, newline='') as csvfile:
-        reader = csv.reader(csvfile, delimiter=',', quotechar='|')
-        for name in reader:
-            name = name[0]
-            for i in range(0, len(name) - 1):
-                letter1 = name[i].lower()
-                letter2 = name[i+1].lower()
-                index1 = get_letter_index(letter1)
-                index2 = get_letter_index(letter2)
-"""
-
-
-def gen_matrix_from_name_list(name_list):
+    """
+    Reads lines with names from file. Must be 1 name in a row
+    Generates matrix of possibilities for letters in names,
+    normalize and return it as a list of lists
+    :param name_list: srt
+    :return: list
+    """
     with open(name_list, "r") as file:
         f = file.readlines()
         for name in f:
@@ -99,10 +91,17 @@ def gen_matrix_from_name_list(name_list):
                 index1 = get_letter_index(letter1)
                 index2 = get_letter_index(letter2)
                 table[index1][index2] += 1
-    normalize_matrix(table)
+    return normalize_matrix(table)
 
 
-def matrix_to_file(file):
+def matrix_to_file(file, table):
+    """
+    Writes table to file.
+    You can ues Exel to open it and see nice table of probabilities
+    :param file: str
+    :param table: list
+    :return: None
+    """
     with open(file, 'w', newline='') as csvfile:
         writer = csv.writer(csvfile, delimiter=',',
                             quotechar='|', quoting=csv.QUOTE_MINIMAL)
@@ -110,7 +109,26 @@ def matrix_to_file(file):
             writer.writerow(table[i])
 
 
-f = "./resources/human_male.csv"
-l = "./resources/boys_names.csv"
-gen_matrix_from_name_list(l)
-matrix_to_file(f)
+def read_table_from_csv(file):
+    """
+    Reads table of probabilities from a file
+    Return list of lists
+    :param file: str
+    :return: list
+    """
+    new_table = []
+    with open(file, 'r') as f:
+        lines = f.readlines()
+        for line in lines:
+            # convert comma-separated string into list of float values
+            new_table.append(list(map(lambda x: float(x), line.split(','))))
+    return new_table
+
+f = "./resources/human_female.csv"
+l = "./resources/girls_names.csv"
+# girls = gen_matrix_from_name_list(l)
+# matrix_to_file(f, girls)
+nt = read_table_from_csv(f)
+
+for i in range(10):
+    print(name_generator(random.choice(range(3, 9)), nt))
